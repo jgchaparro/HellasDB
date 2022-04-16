@@ -10,18 +10,17 @@ The Hellas Database aims to gather population data from ELSTAT census and other 
 - Location names in dimotiki Greek.
 - All administrative units a location belongs to.   
 - Coordinates for ~ 70 % of locations.
-- Mean temperature for locations with coordinates available.
+- Other terrain information: urban/rural, plains/mountains.
 
 ## Sources
 
 - [ELSTAT](https://www.statistics.gr/2011-census-pop-hous)
 - [GeoNames API](http://www.geonames.org/export/web-services.html)
-- [OpenWeather API](https://openweathermap.org/api/statistics-api)
 
 ## Files
 
 - `data/hellas_db.csv`: final database.
-- `data/geonames_df.csv`: web-scapred data for all perifereies from Geonames.
+- `data/raw_geonames_df.csv`: web-scapred data for all perifereies from Geonames.
 
 ## Steps taken
 
@@ -30,7 +29,7 @@ The Hellas Database aims to gather population data from ELSTAT census and other 
 1. Getting area data for all 13 perifereies and all available population registers for each perifereia through Geonames API.
 1. Joining Geonames API data in a unique database.
 1. Joining census and Geonames data based on town name (`desc`) and province (`nomos`) to obtain coordinates for each location.
-1. Obtaining mean temperature data through OpenWeather API.
+1. Adding terrain information (`astikotita`, `orinotita`) based on ELSTAT urban/rural census. 
 
 ## Caveats
 
