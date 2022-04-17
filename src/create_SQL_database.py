@@ -10,9 +10,13 @@ Created on Fri Apr 15 10:43:24 2022
 import mysql.connector as conn
 import pymysql
 from sqlalchemy import create_engine
+import pandas as pd
 
-from functions import pass_
-from initialpy import df
+from functions import pass_, filenames
+
+#%% Import database
+
+db = pd.read_csv(f'../final_databases/{filenames["full_database"]}.csv')
 
 #%% Create MySQL connection string
 
@@ -34,5 +38,5 @@ motor = create_engine(str_conn)
 
 #%% Export to MySQL
 
-df.to_sql(name = 'main', con = motor, if_exists = 'replace', index = True)
+db.to_sql(name = 'main', con = motor, if_exists = 'replace', index = True)
 print(f'{db_name} created')

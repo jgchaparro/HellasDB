@@ -14,7 +14,7 @@ import requests as req
 
 def unroll_census(df):
     
-    # Prepare first three levels: same replace struvture
+  
     for adm_name, lev, c_nom in [('perifereia', 3, 'ΠΕΡΙΦΕΡΕΙΑ '),
                                  ('nomos', 4, 'ΠΕΡΙΦΕΡΕΙΑΚΗ ΕΝΟΤΗΤΑ '), 
                                  ('dimos', 5, 'ΔΗΜΟΣ '),
@@ -29,7 +29,10 @@ def unroll_census(df):
                 df.loc[i, adm_name] = df.loc[i, 'desc'].replace(c_nom, '').split(' (')[0]
             elif lev >= 6:
                 df.loc[i, adm_name] = df.loc[i, 'desc'].split(c_nom)[-1]
-
+                if lev == 7:
+                    df.loc[i, 'koinot_id'] = df.loc[i, 'code']
+    
+    # Forward fill
     df.ffill(inplace = True)
 
 
@@ -276,11 +279,14 @@ def merge_census_urban(df, dfu):
     # Add information
     for i in df.index:
         try:
-            code = int(str(df.loc[i, 'code'])[:-2])
+            code = df.loc[i, 'koinot_id']
             for col in new_cols:
                 df.loc[i, col] = dfu.loc[code, col]
         except:
             print(f'Invalid code: i = {i}')
+
+    # Correct datatype
+    df['astikotita'] = df['astikotita'].astype(bool)
 
 #%% Transliterate nomos names
 

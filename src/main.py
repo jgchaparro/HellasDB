@@ -32,6 +32,10 @@ print(f'{str(n_crossed)} coordinates added')
 #n_elevs = len(df[~df['elev'].isnull()])
 #print(f'{str(n_elevs)} elevations added')
 
+#%% Save intermediate df
+
+df.to_csv('../data/census+geonames.csv', index = False)
+
 #%% Merge main df and ELSTAT urban
 
 merge_census_urban(df, dfs['urban'])
