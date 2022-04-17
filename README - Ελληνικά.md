@@ -17,10 +17,10 @@
 - [ΕΛΣΤΑΤ](https://www.statistics.gr/2011-census-pop-hous)
 - [GeoNames API](http://www.geonames.org/export/web-services.html)
 
-## Αρχεία
+## Κύρια αρχεία
 
-- `data/hellas_db.csv`: τελική βάση δεδομένων.
-- `data/raw_geonames_df.csv`: δεδομένα περιφέρειων.
+- `final_databases/hellas_db.csv`: τελική βάση δεδομένων.
+- `final_databases/hellas_db.xlsx`: τελική βάση δεδομένων σε μορφή Excel.
 
 ## Βήματα 
 

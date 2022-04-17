@@ -17,10 +17,10 @@ The Hellas Database aims to gather population data from ELSTAT census and other 
 - [ELSTAT](https://www.statistics.gr/2011-census-pop-hous)
 - [GeoNames API](http://www.geonames.org/export/web-services.html)
 
-## Files
+## Main files
 
-- `data/hellas_db.csv`: final database.
-- `data/raw_geonames_df.csv`: web-scapred data for all perifereies from Geonames.
+- `final_databases/hellas_db.csv`: final database.
+- `final_databases/hellas_db.xlsx`: final database as an Excel spreadsheet.
 
 ## Steps taken
 
