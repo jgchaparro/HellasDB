@@ -235,7 +235,7 @@ def merge_census_gn(df, dfgn):
     
         # If town name is unique, add results
         if len(res) == 1:
-            print('Unique coincidence found!')
+            #print('Unique coincidence found!')
             add_info(res, df, i)
         
         # If not, filter by nomos
@@ -245,7 +245,7 @@ def merge_census_gn(df, dfgn):
             # If name is unique in the nomos, add results
             if len(res_filt) == 1:
                 add_info(res_filt, df, i)
-                print('Unique coincidence found!')
+                #print('Unique coincidence found!')
     
     def add_info(res, df, i):
         """Adds coordinates and elevation to the main census df 
@@ -265,10 +265,10 @@ def merge_census_gn(df, dfgn):
         df[col] = np.nan
     
     # Use map to merge
-    #map(filter_town, range(len(df))))
+    list(map(filter_town, range(len(df))))
     
-    for i in range(len(df)):
-        filter_town(i)
+    #for i in range(len(df)):
+    #    filter_town(i)
 
 def merge_census_urban(df, dfu):
     """Adds terrain information from ELSTAT urban table to
