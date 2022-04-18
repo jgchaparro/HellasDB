@@ -226,6 +226,27 @@ def merge_census_gn(df, dfgn):
     can be distinguished from homonymous towns in other provices and
     obtain its coordinates and elevation."""
     
+    def filter_town(i):
+        town = df.loc[i, 'desc']
+        nomos = df.loc[i, 'nomos']
+        print(f'Merging {town} ({nomos})')
+        
+        res = dfgn[dfgn['greek_name'].str.contains(town)]
+    
+        # If town name is unique, add results
+        if len(res) == 1:
+            print('Unique coincidence found!')
+            add_info(res, df, i)
+        
+        # If not, filter by nomos
+        elif len(res) > 1:
+            res_filt = res[res['nomos'] == nomos]
+            #print(res_filt)
+            # If name is unique in the nomos, add results
+            if len(res_filt) == 1:
+                add_info(res_filt, df, i)
+                print('Unique coincidence found!')
+    
     def add_info(res, df, i):
         """Adds coordinates and elevation to the main census df 
         based on a given index i"""
@@ -242,29 +263,12 @@ def merge_census_gn(df, dfgn):
     new_cols = ['lat', 'long']
     for col in new_cols:
         df[col] = np.nan
-                 
     
-    for i in range(0, len(df)):
-        town = df.loc[i, 'desc']
-        nomos = df.loc[i, 'nomos']
-        print(f'Merging {town} ({nomos})')
-        
-        res = dfgn[dfgn['greek_name'].str.contains(town)]
+    # Use map to merge
+    #map(filter_town, range(len(df))))
     
-        # If town name is unique, add results
-        if len(res) == 1:
-            print('Unique coincidence found!')
-            add_info(res, df, i)
-            continue
-        
-        # If not, filter by nomos
-        elif len(res) > 1:
-            res_filt = res[res['nomos'] == nomos]
-            print(res_filt)
-            # If name is unique in the nomos, add results
-            if len(res_filt) == 1:
-                add_info(res_filt, df, i)
-                print('Unique coincidence found!')
+    for i in range(len(df)):
+        filter_town(i)
 
 def merge_census_urban(df, dfu):
     """Adds terrain information from ELSTAT urban table to

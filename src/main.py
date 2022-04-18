@@ -11,6 +11,8 @@ import pandas as pd
 
 from functions import filenames, merge_census_gn, merge_census_urban
 
+import time
+
 #%% Load data
 
 dfs = {'census' : pd.read_csv(f'../data/{filenames["ELSTAT_census"]}.csv'),
@@ -23,6 +25,8 @@ df = dfs['census'].copy()
 
 #%% Merge ELSTAT census and Geonames
 
+start = time.time()
+
 merge_census_gn(df, dfs['geonames'])
 
 # Present merging results
@@ -32,6 +36,7 @@ print(f'{str(n_crossed)} coordinates added')
 #n_elevs = len(df[~df['elev'].isnull()])
 #print(f'{str(n_elevs)} elevations added')
 
+print(f'Elapsed time: {time.time() - start}')
 #%% Save intermediate df
 
 df.to_csv('../data/census+geonames.csv', index = False)
