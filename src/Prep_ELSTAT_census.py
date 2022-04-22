@@ -11,7 +11,8 @@ import pandas as pd
 import urllib.request
 import numpy as np
 from os.path import exists 
-from functions import unroll_census, dimotiki, filenames
+from functions import unroll_census, dimotiki
+from utils import filenames
 
 #%% Obtain census .xlsx
 
@@ -73,6 +74,7 @@ df['koinot_id'] = df['koinot_id'].apply(lambda x: int(x))
 
 #%% Change from katharevoussa to dimotiki Greek
 
+df['original_name'] = df['desc']
 df['namedata'] = df['desc'].apply(dimotiki)
 df.reset_index(inplace = True, drop = True)
 namedata = pd.json_normalize(df['namedata'])
@@ -84,6 +86,44 @@ df.drop(columns = 'namedata', inplace = True)
 # Reorder columns
 df['desc'] = df['dim']
 df.drop(columns = 'dim', inplace = True)
+
+#%% Create merging columns
+
+df['nomos-dimos'] = df['nomos'] + '-' + df['dimos']
+df['nomos-dimenot'] = df['nomos'] + '-' + df['dimenot']
+
+#df['name-nomos-dimos'] = df['original_name'] + '-' + df['nomos'] + '-' + df['dimos']
+#df['names-nomos-dimenot'] = df['original_name'] + '-' + df['nomos'] + '-' + df['dimenot']
+
+#%% Create change columns
+
+# De facto changes
+# Total
+df['tcf1101'] = df['facto11'] - df['facto01'] 
+df['tcf0191'] = df['facto01'] - df['facto91']
+df['tcf1191'] = df['facto11'] - df['facto91'] 
+
+# Percentage
+df['pcf1101'] = ((df['facto11'] - df['facto01']) * 100)/(df['facto01'])
+df['pcf0191'] = ((df['facto01'] - df['facto91']) * 100)/(df['facto91'])
+df['pcf1191'] = ((df['facto11'] - df['facto91']) * 100)/(df['facto91'])
+
+# De iure changes
+# Total
+df['tci1101'] = df['iure11'] - df['iure01'] 
+df['tci0191'] = df['iure01'] - df['iure91']
+df['tci1191'] = df['iure11'] - df['iure91']
+
+# Percentage
+df['pci1101'] = ((df['iure11'] - df['iure01']) * 100)/(df['iure01'])
+df['pci0191'] = ((df['iure01'] - df['iure91']) * 100)/(df['iure91'])
+df['pci1191'] = ((df['iure11'] - df['iure91']) * 100)/(df['iure91'])
+
+# Replace infs and NaNs
+to_replace = 0
+for c in ['pcf1101', 'pcf0191', 'pcf1191', 'pci1101', 'pci0191', 'pci1191']:
+    df[c] = df[c].replace({np.inf : to_replace, 
+                           np.nan : to_replace})
 
 #%% Save final ELSTAT census dataframe
 

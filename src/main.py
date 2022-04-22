@@ -9,15 +9,18 @@ Created on Tue Apr 12 12:38:38 2022
 
 import pandas as pd
 
-from functions import filenames, merge_census_gn, merge_census_urban
+from functions import merge_census_coord, merge_census_urban
+from utils import filenames
 
 import time
+
 
 #%% Load data
 
 dfs = {'census' : pd.read_csv(f'../data/{filenames["ELSTAT_census"]}.csv'),
-       'geonames' : pd.read_csv(f'../data/{filenames["Geonames"]}.csv'),
-       'urban' : pd.read_csv(f'../data/{filenames["ELSTAT_urban"]}.csv').set_index('code')}
+       #'geonames' : pd.read_csv(f'../data/{filenames["Geonames"]}.csv'),
+       'urban' : pd.read_csv(f'../data/{filenames["ELSTAT_urban"]}.csv').set_index('code'),
+       'coord' : pd.read_csv(f'../data/{filenames["ELSTAT_coord"]}.csv')}
 
 #%% Select base df
 
@@ -27,16 +30,18 @@ df = dfs['census'].copy()
 
 start = time.time()
 
-merge_census_gn(df, dfs['geonames'])
+merge_census_coord(df, dfs['coord'])
 
 # Present merging results
 n_crossed = len(df[~df['lat'].isnull()])
 print(f'{str(n_crossed)} coordinates added')
-
-#n_elevs = len(df[~df['elev'].isnull()])
-#print(f'{str(n_elevs)} elevations added')
-
+ 
+n_elevs = len(df[~df['h'].isnull()])
+print(f'{str(n_elevs)} elevations added')
+ 
 print(f'Elapsed time: {time.time() - start}')
+ 
+
 #%% Save intermediate df
 
 df.to_csv('../data/census+geonames.csv', index = False)

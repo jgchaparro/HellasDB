@@ -19,7 +19,8 @@ import pandas as pd
 import urllib.request
 import numpy as np
 from os.path import exists 
-from functions import unroll_census, dimotiki, filenames
+from functions import unroll_census, dimotiki
+from utils import filenames
 
 #%% Get urban census
 
