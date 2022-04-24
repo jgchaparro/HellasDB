@@ -94,4 +94,5 @@ filenames = {'full_database' : 'hellas_db',
              'ELSTAT_census' : 'ELSTAT_census',
              'ELSTAT_urban' : 'ELSTAT_urban',
              'Geonames' : 'Geonames_processed',
-             'ELSTAT_coord' : 'ELSTAT_coord'}
+             'ELSTAT_coord' : 'ELSTAT_coord',
+             'Kal-Kap' : 'Kal-Kap_corresp'}

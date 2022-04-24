@@ -12,7 +12,7 @@ import pymysql
 from sqlalchemy import create_engine
 import pandas as pd
 
-from functions import pass_, filenames
+from utils import pass_, filenames
 
 #%% Import database
 

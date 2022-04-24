@@ -1,2 +1,5 @@
 /data/tkn.txt
 /data/MySQL_pass.txt
+/data/Geonames*
+/data/census+geonames.csv
+/raw_geonames_df.csv

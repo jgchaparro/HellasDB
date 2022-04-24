@@ -112,8 +112,6 @@ def dimotiki(name):
                 'article_dim' : np.nan}
 
 
-
-
 def get_greek_name(altname_lst):
     """Extracts the Greek name from the alternative names 
     column of the Geonames database"""
@@ -182,13 +180,14 @@ def merge_census_coord(df, dfc):
     
         # If town name is unique, add results
         if len(res) == 1:
+            
             #print('Unique coincidence found!')
             add_info(res, df, i)
         
         # If not, filter by nomos
         elif len(res) > 1:
             res_filt = res[res['nomos'] == nomos]
-            #print(res_filt)
+            print(res_filt)
             # If name is unique in the nomos, add results
             if len(res_filt) == 1:
                 add_info(res_filt, df, i)
@@ -198,8 +197,7 @@ def merge_census_coord(df, dfc):
             else:
                 res_filt2 = res[res['nomos-dimos'] == nomos_dimos]
                 if len(res_filt2) == 1:
-                    add_info(res_filt, df, i)
-                
+                    add_info(res_filt, df, i)                
     
     def add_info(res, df, i):
         """Adds coordinates and elevation to the main census df 
@@ -219,13 +217,6 @@ def merge_census_coord(df, dfc):
         df[col] = np.nan
     
     list(map(filter_town, range(len(df))))
-    
-    
-    
-    
-    
-    
-    
     
     
     
