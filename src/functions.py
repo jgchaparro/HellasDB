@@ -168,60 +168,225 @@ def merge_census_urban(df, dfu):
     # Correct datatype
     df['astikotita'] = df['astikotita'].astype(bool)
 
-def merge_census_coord(df, dfc):
+
+def add_info(res, df, i):
+    """Adds coordinates and elevation to the main census df 
+    based on a given index i"""
     
-    def filter_town(i):
-        town = df.loc[i, 'original_name']
-        nomos = df.loc[i, 'nomos']
-        nomos_dimos = df.loc[i, 'nomos-dimos']
-        print(f'Merging {town} ({nomos})')
-        
-        res = dfc[dfc['full_name'] == town]
+    search_cols = { # Column in census : column in coord
+                    'lat' : 'lat',
+                    'long' : 'lon',
+                    'h': 'h'
+                    }
+    for cc, coord_c in search_cols.items(): # Census column, coord column
+        df.loc[i, cc] = res[coord_c].iloc[0]
     
-        # If town name is unique, add results
-        if len(res) == 1:
-            
-            #print('Unique coincidence found!')
-            add_info(res, df, i)
-        
-        # If not, filter by nomos
-        elif len(res) > 1:
-            res_filt = res[res['nomos'] == nomos]
-            print(res_filt)
-            # If name is unique in the nomos, add results
-            if len(res_filt) == 1:
-                add_info(res_filt, df, i)
-                #print('Unique coincidence found!')
-            
-            # If not, filter by dimos-nomos combination
-            else:
-                res_filt2 = res[res['nomos-dimos'] == nomos_dimos]
-                if len(res_filt2) == 1:
-                    add_info(res_filt, df, i)                
+def merge_census_coord(df, dfc, corr):
     
     def add_info(res, df, i):
         """Adds coordinates and elevation to the main census df 
         based on a given index i"""
         
-        search_cols = { # Column in census : column in geonames
+        search_cols = { # Column in census : column in coord
                         'lat' : 'lat',
                         'long' : 'lon',
-                        'h': 'h' # Not enough elements
+                        'h': 'h'
                         }
-        for cc, gc in search_cols.items(): # Census column, Geonames column
-            df.loc[i, cc] = res[gc].iloc[0]    
+        for cc, coord_c in search_cols.items(): # Census column, coord column
+            df.loc[i, cc] = res[coord_c].iloc[0]    
             
     #Create empty columns to be populated later
     new_cols = ['lat', 'long', 'h']
     for col in new_cols:
         df[col] = np.nan
     
-    list(map(filter_town, range(len(df))))
+    
+    def filter_town(i):
+        
+        # Filter by KAL dimenot
+        def search_by_nomos_dimenot_name(nomos, dimenot, town):
+             
+            try:
+                in_dimenot = corr[(corr['nomos_kal'] == nomos) & 
+                                   (corr['dimenot_kal'] == dimenot)]
+                 
+                nomarchia_kap = in_dimenot['nomarchia_kap'].unique().tolist()[0]
+                dimos_kap = in_dimenot['dimos_kap'].unique().tolist()[0]
+             
+                # Filter by Kapodistrias nomarchia
+                res = dfc[(dfc['nomos']  == nomarchia_kap) &
+                           (dfc['dimos'] == dimos_kap) & 
+                           (dfc['full_name'] == town)]        
+            except:
+                res = []
+            
+            return res
+        
+        # Filter by KAL dimos
+        def search_by_nomos_dimos_town(nomos, dimos, town):
+            """Returns a `res` object to be passed to `add_info`"""
+            
+            try:
+                in_dimenot = corr[(corr['nomos_kal'] == nomos) & 
+                                  (corr['dimos_kal'] == dimos)]
+    
+                nomarchia_kap = in_dimenot['nomarchia_kap'].unique().tolist()[0]
+                dimos_kap = in_dimenot['dimos_kap'].unique().tolist()[0]
+            
+                # Filter by Kapodistrias dimos and nomarchia
+                res = dfc[(dfc['nomos']  == nomarchia_kap) &
+                          (dfc['dimos'] == dimos_kap) & 
+                          (dfc['full_name'] == town)]
+            except:
+                res = []
+                
+            return res
+        
+
+         
+        # `koinot` in KAP corresponds to 'dimenot' in KAL
+        def search_by_koinot_name(koinot, town):
+            res = dfc[(dfc['full_name'] == town) &
+                          (dfc['dimenot'] == koinot)]
+                
+            return res
+            
+        
+        def search_by_nomos_name(nomos, town):
+            in_nomos = corr[corr['nomos_kal'] == nomos]            
+            
+            try:
+                nomarchia_kap = in_nomos['nomarchia_kap'].unique().tolist()[0]
+            
+                # Filter by name
+                res = dfc[(dfc['nomos']  == nomarchia_kap) &
+                          (dfc['full_name'] == town)]
+                
+            except:
+                res = []
+            
+            return res
+        
+        
+        # Get basic data
+        town = df.loc[i, 'original_name']
+        koinot = df.loc[i, 'koinot']
+        dimenot = df.loc[i, 'dimenot']
+        dimos = df.loc[i, 'dimos']
+        nomos = df.loc[i, 'nomos']
+        print(f'Merging {town} ({nomos})')
+        
+        # Filter by nomos, dimos, dimenot in the correspondence table
+        #in_dimenot = corr[(corr['nomos_kal'] == nomos) & 
+        #                  (corr['dimos_kal'] == dimos) &
+        #                  (corr['dimenot_kal'] == dimenot)]
     
     
     
+        # Excute functions
+        
+        res = search_by_nomos_dimenot_name(nomos, dimenot, town)
+        # If there is a unique match
+        if len(res) == 1:
+            add_info(res, df, i)
+            print('Adding unique coincidence')
+            
+        else:
+           res = search_by_nomos_dimos_town(nomos, dimos, town)
+           # If there is a unique match
+           if len(res) == 1:
+               add_info(res, df, i)
+               print('Adding unique coincidence')
+           else:
+               res = search_by_koinot_name(koinot, town)
+               if len(res) == 1:
+                   add_info(res, df, i)
+                   print('Adding unique coincidence')
+               else:
+                   res = search_by_nomos_name(nomos, town)
+                   if len(res) == 1:
+                       add_info(res, df, i)
+                       print('Adding unique coincidence')
+                       
+                
+    # Initialize
+    for i in range(len(df)):
+        filter_town(i)            
+    
+    #list(map(filter_town, range(len(df))))
     
     
+#%% Secondary merging functions
     
+def merge_agion_oros(df, dfc):
+    """Merges locations only for Agion Oros."""
+       
+    # Extract dataframes
+    df_ao_i = df[df['dimos'] == 'ΑΓΙΟ ΟΡΟΣ'].index
+    dfc_ao = dfc[dfc['dimos'] == 'ΑΓΙΟΝ ΟΡΟΣ']
     
+    # Add irregularities
+    irregs = {# Census original_name : coord full_name
+              'Προβάτα - Μορφονού,η (Ιερά Μονή Μεγίστης Λαύρας)' : 'Προβάτα-Μορφονού,η (Ιερά Μονή Μεγίστης Λαύρας)'}
+    
+    for i in df_ao_i:
+        town = df.loc[i, 'original_name']
+        desc = df.loc[i, 'desc']
+        
+        res = dfc_ao[dfc_ao['full_name'] == town]
+        if len(res) == 1:
+            add_info(res, df, i)
+        elif town in irregs:
+            res = dfc_ao[dfc_ao['full_name'] == irregs[town]]
+        else:
+            res = dfc_ao[dfc_ao['name'] == desc]
+            if len(res) == 1:
+                add_info(res, df, i)
+            
+                
+def merge_simple(df, dfc):
+    """Merges towns based only on town names."""
+    
+    df_nans = df[df['lat'].isnull()]
+    nans_i = df_nans.index
+    
+    for i in nans_i:
+        town = df.loc[i, 'original_name']
+        
+        res = dfc[dfc['full_name'] == town]
+        if len(res) == 1:
+            add_info(res, df, i)
+    
+def reverse_merging(df, dfc):
+    """Merges based on unused census coordinates"""
+
+    # Copy df
+    df2 = df.copy()
+    dfc2 = dfc.copy()
+    
+    # Create lat+long column to compare
+    df2['lat+long'] = [(lat, long) for lat, long in zip(df2['lat'], df2['long'])]
+    dfc2['lat+long'] = [(lat, long) for lat, long in zip(dfc2['lat'], dfc2['lon'])]
+    
+    # Get unused lats
+    used_lats = df2['lat+long'].tolist()
+    dfc2['used'] = [True if r in used_lats else False for r in dfc2['lat+long'].tolist()]
+    dfc3 = dfc2[dfc2['used'] == False]
+    
+    # Filter using the names and codes
+    for i in dfc3.index:
+        name = dfc3.loc[i, 'name']
+        full_name = dfc3.loc[i, 'full_name']
+        
+        res = df[df['desc'] == name]
+        if len(res) == 1:
+            index = res.index[0]
+            res_c = dfc2.loc[i].to_frame().T
+            add_info(res_c, df, index)
+        else:
+            res = df[df['original_name'] == full_name]
+            if len(res) == 1:
+                index = res.index[0]
+                res_c = dfc2.loc[i].to_frame().T
+                add_info(res_c, df, index)
     

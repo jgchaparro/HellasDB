@@ -39,7 +39,7 @@ col_index = [6, 10, 12, 14, 19, 21, 23]
 df = df.iloc[:, col_index]
 
 col_names = ['dimenot_kal', 'dimos_kal', 'nomos_kal', 'perifereia_kal',
-             'dimos_kap', 'normarchia_kap', 'perifereia_kap']
+             'dimos_kap', 'nomarchia_kap', 'perifereia_kap']
 
 df.columns = col_names
 
