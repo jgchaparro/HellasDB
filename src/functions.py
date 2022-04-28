@@ -9,7 +9,6 @@ import pandas as pd
 import numpy as np
 import re
 import requests as req
-from joblib import Parallel, delayed
 from utils import io_excepts
 
 #%% ELSTAT census functions
@@ -112,14 +111,6 @@ def dimotiki(name):
                 'article_dim' : np.nan}
 
 
-def get_greek_name(altname_lst):
-    """Extracts the Greek name from the alternative names 
-    column of the Geonames database"""
-    try:
-        return [an for an in altname_lst if an['lang'] == 'el'][0]['name']
-    except:
-        return np.nan
-
     
 def dimotiki_simp(name):
     """Returns the dimotiki form for a name"""
@@ -180,27 +171,10 @@ def add_info(res, df, i):
                     }
     for cc, coord_c in search_cols.items(): # Census column, coord column
         df.loc[i, cc] = res[coord_c].iloc[0]
+        
     
 def merge_census_coord(df, dfc, corr):
-    
-    def add_info(res, df, i):
-        """Adds coordinates and elevation to the main census df 
-        based on a given index i"""
         
-        search_cols = { # Column in census : column in coord
-                        'lat' : 'lat',
-                        'long' : 'lon',
-                        'h': 'h'
-                        }
-        for cc, coord_c in search_cols.items(): # Census column, coord column
-            df.loc[i, cc] = res[coord_c].iloc[0]    
-            
-    #Create empty columns to be populated later
-    new_cols = ['lat', 'long', 'h']
-    for col in new_cols:
-        df[col] = np.nan
-    
-    
     def filter_town(i):
         
         # Filter by KAL dimenot
@@ -276,13 +250,6 @@ def merge_census_coord(df, dfc, corr):
         nomos = df.loc[i, 'nomos']
         print(f'Merging {town} ({nomos})')
         
-        # Filter by nomos, dimos, dimenot in the correspondence table
-        #in_dimenot = corr[(corr['nomos_kal'] == nomos) & 
-        #                  (corr['dimos_kal'] == dimos) &
-        #                  (corr['dimenot_kal'] == dimenot)]
-    
-    
-    
         # Excute functions
         
         res = search_by_nomos_dimenot_name(nomos, dimenot, town)
@@ -310,10 +277,10 @@ def merge_census_coord(df, dfc, corr):
                        
                 
     # Initialize
-    for i in range(len(df)):
-        filter_town(i)            
+    #for i in df.index:
+    #    filter_town(i)            
     
-    #list(map(filter_town, range(len(df))))
+    list(map(filter_town, df.index))
     
     
 #%% Secondary merging functions
@@ -343,19 +310,7 @@ def merge_agion_oros(df, dfc):
             if len(res) == 1:
                 add_info(res, df, i)
             
-                
-def merge_simple(df, dfc):
-    """Merges towns based only on town names."""
-    
-    df_nans = df[df['lat'].isnull()]
-    nans_i = df_nans.index
-    
-    for i in nans_i:
-        town = df.loc[i, 'original_name']
-        
-        res = dfc[dfc['full_name'] == town]
-        if len(res) == 1:
-            add_info(res, df, i)
+            
     
 def reverse_merging(df, dfc):
     """Merges based on unused census coordinates"""
@@ -389,4 +344,132 @@ def reverse_merging(df, dfc):
                 index = res.index[0]
                 res_c = dfc2.loc[i].to_frame().T
                 add_info(res_c, df, index)
+                
+def get_unused_lats(df, dfc):
+    df2 = df.copy()
+    dfc2 = dfc.copy()
+    
+    # Create lat+long column to compare
+    df2['lat+long'] = [(lat, long) for lat, long in zip(df2['lat'], df2['long'])]
+    dfc2['lat+long'] = [(lat, long) for lat, long in zip(dfc2['lat'], dfc2['lon'])]
+    
+    # Get unused lats
+    used_lats = df2['lat+long'].tolist()
+    dfc2['used'] = [True if r in used_lats else False for r in dfc2['lat+long'].tolist()]
+    dfc3 = dfc2[dfc2['used'] == False]
+    return dfc3
+
+def merge_parenthesis(df, dfc, corr):
+    """Merges towns with parenthesis and no coords"""
+    
+    # Create temporary dfs
+    df_mod = df.copy()[df['lat'].isnull()]
+    dfc_mod = get_unused_lats(df, dfc)
+    
+    #Modify dfs
+    df_mod['original_name'] = df_mod['original_name'].apply(lambda x: x.split(' (')[0])
+    dfc_mod['full_name'] = dfc_mod['full_name'].apply(lambda x: x.split(' (')[0])
+
+    merge_census_coord(df_mod, dfc_mod, corr)
+    
+    # Correct column name
+    df_mod.rename({'long' : 'lon'}, axis = 1, inplace = True)
+    
+    for i in df_mod[~df_mod['lat'].isnull()].index:
+       res = df_mod.loc[i].to_frame().T
+       add_info(res, df, i)
+
+def merge_root_koinot_name(df, dfc):
+    
+    # Create temporary dfs
+    df_mod = df.copy()[df['lat'].isnull()]
+    dfc_mod = get_unused_lats(df, dfc)
+    
+    # Remove accents to avoid divergences
+    df_mod['original_name'] = df_mod['original_name'].apply(remove_accents)
+    df_mod['koinot'] = df_mod['koinot'].apply(remove_accents)
+    
+    
+    dfc_mod['full_name'] = dfc_mod['full_name'].apply(remove_accents)
+    dfc_mod['dimenot'] = dfc_mod['dimenot'].apply(remove_accents)
+    
+    def filter_town(i):
+    
+        town = df_mod.loc[i, 'original_name']
+        koinot = df_mod.loc[i, 'koinot']
+    
+        # `koinot` in KAP corresponds to 'dimenot' in KAL
+        def search_by_koinot_name(koinot, town):
+            res = dfc_mod[(dfc_mod['full_name'] == town) &
+                          (dfc_mod['dimenot'].str[:-2] == koinot[:-2])]
+            return res
+        
+        res = search_by_koinot_name(koinot, town)
+        if len(res) == 1:
+            add_info(res, df, i)
+    
+    #i = 10232
+    #filter_town(i)
+    for i in df_mod.index:
+       filter_town(i)
+     
+def merge_simple(df, dfc):
+    # Create temporary dfs
+    df_mod = df.copy()[df['lat'].isnull()]
+    dfc_mod = get_unused_lats(df, dfc)
+    
+    def filter_town(i):
+        town = df_mod.loc[i, 'original_name']
+        res = dfc_mod[dfc_mod['full_name'] == town]
+                      
+        if len(res) == 1:
+            add_info(res, df, i)
+    
+    list(map(filter_town, df_mod.index))
+
+def remove_accents(string):
+    to_replace = {
+                'ά' : 'α',
+                'έ' : 'ε',
+                'ή' : 'η',
+                'ί' : 'ι',
+                'ύ' : 'υ', 
+                'ό' : 'ο',
+                'ώ' : 'ω',
+                'Ά' : 'Α',
+                'Έ' : 'Ε',
+                'Ή' : 'Η',
+                'Ί' : 'Ι',
+                'Ύ' : 'Υ', 
+                'Ό' : 'Ο',
+                'Ώ' : 'Ω'
+        }
+    
+    for key, value in to_replace.items():
+        string = string.replace(key, value)
+    
+    return string
+
+def merge_dimos_name(df, dfc):
+    # Create temporary dfs
+    df_mod = df.copy()[df['lat'].isnull()]
+    dfc_mod = get_unused_lats(df, dfc)
+    
+    def filter_town(i):
+        town = df_mod.loc[i, 'original_name']
+        dimos = df_mod.loc[i, 'dimos']
+        res = dfc_mod[(dfc_mod['full_name'] == town) & (dfc_mod['dimos'] == dimos)]
+                      
+        if len(res) == 1:
+            add_info(res, df, i)
+    
+    list(map(filter_town, df_mod.index))
+
+def add_manual_locations(df, filepath, index_col = 'index'):
+    
+    manual_df = pd.read_excel(filepath, index_col = index_col)
+    
+    for i in manual_df.index:
+        df.loc[i, ['lat', 'long', 'h']] = manual_df.loc[i, ['lat', 'long', 'h']]
+    
     
