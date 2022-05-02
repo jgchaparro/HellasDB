@@ -55,11 +55,11 @@ print(f'Elapsed time: {time.time() - start}')
 
 #%% Save intermediate df
 
-df.to_csv('../data/census+coord.csv', index = False)
+df.to_csv('../intermediate_databases/hellas_db_v0.1.csv', index = False)
 
 #%% Load intermediate
 
-df = pd.read_csv('../data/census+coord.csv')
+df = pd.read_csv('../intermediate_databases/hellas_db_v0.1.csv')
 
 #%% Merge secondary NaNs
 
@@ -87,11 +87,11 @@ merge_dimos_name(df, dfs['coord'])
 
 #%% Save intermediate df
 
-df.to_csv('../data/census+coord_2.0.csv', index = False)
+df.to_csv('../intermediate_databases/hellas_db_v0.2.csv', index = False)
 
 #%% Load intermediate
 
-df = pd.read_csv('../data/census+coord_2.0.csv')
+df = pd.read_csv('../intermediate_databases/hellas_db_v0.2.csv')
 
 #%% Save location NaNs
 
@@ -127,8 +127,8 @@ print(f'Elapsed time: {time.time() - start}')
 # Rename index
 df.index.name = 'index'
 
-df.to_csv(f'../final_databases/{filenames["full_database"]}.csv')
-df.to_excel(f'../final_databases/{filenames["full_database"]}.xlsx')
+df.to_csv(f'../intermediate_databases/hellas_db_1.0.csv')
+df.to_excel(f'../intermediate_databases/hellas_db_1.0.xlsx')
 
 
 #%% Tests

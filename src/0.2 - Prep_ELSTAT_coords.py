@@ -9,9 +9,7 @@ Created on Tue Apr 12 12:38:38 2022
 
 import pandas as pd
 import urllib.request
-import numpy as np
 from os.path import exists 
-from functions import unroll_census, dimotiki
 from utils import filenames
 
 #%% Obtain census .csv
@@ -36,11 +34,12 @@ df = dfs['raw']
 
 # Select necessary columns
 sel_cols = ['NAME_OIK', 'NAMEF_OIK', 'lat', 'lon', 'h', 
-            'NAME_DIAM', 'NAME_OTA', 'NAME_NOM']
+            'NAME_DIAM', 'NAME_OTA', 'NAME_NOM', 'NAME_GDIAM']
 df = df[sel_cols]
 
 # Rename cols
-ren_cols = ['name', 'full_name', 'lat', 'lon', 'h', 'dimenot', 'dimos', 'nomos']
+ren_cols = ['name', 'full_name', 'lat', 'lon', 'h', 'dimenot', 'dimos', 
+            'nomos', 'diam']
 df.columns = ren_cols
 
 # Replace 'A

@@ -91,8 +91,18 @@ with open('../data/MySQL_pass.txt') as f:
 
 # Files names
 filenames = {'full_database' : 'hellas_db',
+             'v1.0' : 'hellas_db_v1.0',
              'ELSTAT_census' : 'ELSTAT_census',
              'ELSTAT_urban' : 'ELSTAT_urban',
              'Geonames' : 'Geonames_processed',
              'ELSTAT_coord' : 'ELSTAT_coord',
              'Kal-Kap' : 'Kal-Kap_corresp'}
+
+#%% Island variables
+
+# Dictionary containing all units composed only by islands
+island_adm = {'perif' : ['ΙΟΝΙΩΝ ΝΗΣΩΝ', 'ΒΟΡΕΙΟΥ ΑΙΓΑΙΟΥ', 'ΒΟΡΕΙΟΥ ΑΙΓΑΙΟΥ', 'ΚΡΗΤΗΣ'],
+              'nomos' : ['ΘΑΣΟΥ', 'ΝΗΣΩΝ', 'ΣΠΟΡΑΔΩΝ'],
+              'dimos' : ['ΣΑΜΟΘΡΑΚΗΣ'],
+              'koinot' : ['Αμμουλιανής'],
+              'original_name' : ['Τριζόνια,τα (νησίς)', 'Αιτωλικόν,το']}
