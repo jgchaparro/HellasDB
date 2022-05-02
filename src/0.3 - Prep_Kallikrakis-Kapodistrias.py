@@ -16,7 +16,7 @@ from utils import filenames
 #%% Obtain corresp .xlsx
 
 census_url = 'http://geodata.gov.gr/dataset/46f42d38-df48-4ffa-95ff-24032f4f4618/resource/772f6914-dfb4-48cd-8b22-c3e37b90de81/download/antistoixhshotakapodistriaskallikraths.xls'
-raw_corresp_filename = '../data/correspondence-kallikratis-kapodistrias.xls'
+raw_corresp_filename = '../data/raw_data/correspondence-kallikratis-kapodistrias.xls'
 
 get_raw = False
 

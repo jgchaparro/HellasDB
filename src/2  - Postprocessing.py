@@ -22,7 +22,7 @@ dfs = {'census' : pd.read_csv(f'../data/{filenames["ELSTAT_census"]}.csv'),
 
 #%% Load data
 
-df = pd.read_csv(f'../final_databases/{filenames["full_database"]}.csv', index_col = 'index')
+df = pd.read_csv('../intermediate_databases/hellas_db_v1.0.csv', index_col = 'index')
 
 dfs['cp1'] = df.copy()
 
@@ -32,15 +32,15 @@ add_kapodistrias_adm(df, dfs['coord'])
 
 #%% Save intermediate df
 
-df.to_csv('../data/hellas_db_1.1.csv')
+df.to_csv('../intermediate_databases/hellas_db_v1.1.csv')
 
 #%% Load intermediate
 
-df = pd.read_csv('../data/hellas_db_1.1.csv', index_col = 'index')
+df = pd.read_csv('../intermediate_databases/hellas_db_v1.1.csv', index_col = 'index')
 
 #%% Prepare `edres` df
 
-raw_census_filename = '../data/raw_census.xls'
+raw_census_filename = '../data/raw_data/raw_census.xls'
 rcdf_raw = pd.read_excel(raw_census_filename)
 
 
@@ -72,15 +72,25 @@ add_capital_data(df, edres)
 
 #%% Save intermediate df
 
-df.to_csv('../data/hellas_db_1.2.csv')
+df.to_csv('../intermediate_databases/hellas_db_v1.2.csv')
 
 #%% Load intermediate
 
-df = pd.read_csv('../data/hellas_db_1.2.csv', index_col = 'index')
+df = pd.read_csv('../intermediate_databases/hellas_db_v1.2.csv', index_col = 'index')
 
 #%% Add `island` column
 
 add_island_status(df, island_adm)
+
+#%% Save intermediate df
+
+df.to_csv('../intermediate_databases/hellas_db_v1.3.csv')
+
+#%% Load intermediate
+
+df = pd.read_csv('../intermediate_databases/hellas_db_v1.3.csv', index_col = 'index')
+
+
 
 #%% Save final df
 

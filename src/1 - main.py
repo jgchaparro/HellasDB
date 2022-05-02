@@ -38,7 +38,7 @@ df = dfs['census'].copy()
 
 start = time.time()
 
-force = False
+force = True
 
 if force:
     merge_census_coord(df, dfs['coord'], dfs['Kal-Kap'])
@@ -110,6 +110,15 @@ manual_locations_filename = '../data/manual_locations.xlsx'
 
 add_manual_locations(df, manual_locations_filename)
 
+#%% Save intermediate df
+
+df.to_csv('../intermediate_databases/hellas_db_v0.3.csv', index = False)
+
+#%% Load intermediate
+
+df = pd.read_csv('../intermediate_databases/hellas_db_v0.3.csv')
+
+
 #%% Merge main df and ELSTAT urban
 
 start = time.time()
@@ -127,11 +136,10 @@ print(f'Elapsed time: {time.time() - start}')
 # Rename index
 df.index.name = 'index'
 
-df.to_csv(f'../intermediate_databases/hellas_db_1.0.csv')
-df.to_excel(f'../intermediate_databases/hellas_db_1.0.xlsx')
+df.to_csv('../intermediate_databases/hellas_db_v1.0.csv')
+df.to_excel('../intermediate_databases/hellas_db_v1.0.xlsx')
 
 
 #%% Tests
-
  
 print(len(df[df.lat.isnull()]))

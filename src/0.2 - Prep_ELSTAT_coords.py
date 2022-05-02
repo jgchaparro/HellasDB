@@ -15,7 +15,7 @@ from utils import filenames
 #%% Obtain census .csv
 
 census_url = 'https://geodata.gov.gr/geoserver/wfs/?service=WFS&version=1.0.0&request=GetFeature&typeName=geodata.gov.gr:f45c73bd-d733-4fe0-871b-49f270c56a75&outputFormat=csv&srsName=epsg:3857'
-raw_census_filename = '../data/census_coord.csv'
+raw_census_filename = '../data/raw_data/census_coord.csv'
 
 get_raw = False
 

@@ -17,7 +17,7 @@ from utils import filenames
 #%% Obtain census .xlsx
 
 census_url = 'https://www.statistics.gr/documents/20181/1210503/Kallikratis_me_plithismous_1991_2011.xls/4b9f7484-fae7-44e2-852c-ec650dc0a5c8?version=1.0'
-raw_census_filename = '../data/raw_census.xls'
+raw_census_filename = '../data/raw_data/raw_census.xls'
 
 get_raw = False
 

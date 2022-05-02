@@ -25,7 +25,7 @@ from utils import filenames
 #%% Get urban census
 
 urban_url = 'http://www.statistics.gr/documents/20181/1204266/resident_population_urban_census2011.xls'
-raw_urban_filename = '../data/raw_urban.xls'
+raw_urban_filename = '../data/raw_data/raw_urban.xls'
 
 # Retrieve census only if it does not exist
 if not exists(raw_urban_filename):
