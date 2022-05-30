@@ -1,0 +1,4 @@
+The GDP per capita data for the Attiki regions
+is estimated through the following formula:
+
+(region_GDPPC_2010 / GDPPC_2010) * GDPPC_Attiki_year
