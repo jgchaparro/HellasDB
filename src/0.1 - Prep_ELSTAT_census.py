@@ -11,8 +11,8 @@ import pandas as pd
 import urllib.request
 import numpy as np
 from os.path import exists 
-from functions import unroll_census, dimotiki
-from utils import filenames
+from auxiliary_code.data_wrangling import unroll_census, extract_article
+from auxiliary_code.utils import filenames
 
 #%% Obtain census .xlsx
 
@@ -24,6 +24,7 @@ get_raw = False
 # Retrieve census only if it does not exist
 if not exists(raw_census_filename) or get_raw:
     urllib.request.urlretrieve(census_url, raw_census_filename)
+
 
 #%% Read census
 
@@ -37,25 +38,25 @@ df = dfs['raw'].copy()
 df = df[4:]
 
 # Reaplce column names
-df.columns = ['level', 'nuts1', 'nut2', 'code', 'desc', 
-              'iure11', 'facto11', 'iure01', 'facto01', 'iure91', 'facto91']
+df.columns = ['level', 'nuts1', 'nut2', 'code', 'location', 
+              'legal11', 'facto11', 'legal01', 'facto01', 'legal91', 'facto91']
 
 # Fill NaNs with 0. We assume that there is no population if there is no register
-pop_cols = ['iure11', 'facto11', 'iure01', 'facto01', 'iure91', 'facto91']
+pop_cols = ['legal11', 'facto11', 'legal01', 'facto01', 'legal91', 'facto91']
 df[pop_cols] = df[pop_cols].fillna(0)
 
 
 #%% Prepare for unroll
 
-# Drop bigger administrative units rows
-df = df[df['level'] >= 3]
+# Retain only regional data
+df = df[df['level'] >= 0]
 
 # Add full codification: NUTS1 + NUT2 + CODE
-df['code'] = df['nuts1'] + df['nut2'] + df['code']
-df['code'] = df['code'].apply(lambda x: int(x))
+df['full_code'] = df['nuts1'] + df['nut2'] + df['code']
+df['full_code'] = df['full_code'].apply(lambda x: int(x))
 
 # Add perifereia column
-perif_edres = [df[df.level == 3]['desc'].iloc[i].replace('ΠΕΡΙΦΕΡΕΙΑ ', '').split(' (') for i in range(len(df[df.level == 3]))]
+perif_edres = [df[df.level == 3]['location'].iloc[i].replace('ΠΕΡΙΦΕΡΕΙΑ ', '').split(' (') for i in range(len(df[df.level == 3]))]
 
 #%% Unroll census
 
@@ -66,55 +67,81 @@ unroll_census(df)
 # Retain only towns (level = 8)
 df = df[df['level'] == 8]
 
-# Drop unneeded code columns
-df = df.iloc[:, 3:]
+# Drop `level` column
+
+df.drop(columns = 'level', inplace = True)
 
 # Convert 'koinot_id' dtype
 df['koinot_id'] = df['koinot_id'].apply(lambda x: int(x))
 
+#%% Save checkpoint
+
+dfs['cp1'] = df.copy()
+
 #%% Change from katharevoussa to dimotiki Greek
 
-df['original_name'] = df['desc']
-df['namedata'] = df['desc'].apply(dimotiki)
-df.reset_index(inplace = True, drop = True)
-namedata = pd.json_normalize(df['namedata'])
+# TODO: correct dimotiki functions
 
-# Join df and clean 'namedata' column
-df = pd.concat([df, namedata], axis = 1)
-df.drop(columns = 'namedata', inplace = True)
+# =============================================================================
+# df['original_name'] = df['location']
+# df['namedata'] = df['location'].apply(dimotiki)
+# df.reset_index(inplace = True, drop = True)
+# namedata = pd.json_normalize(df['namedata'])
+# 
+# # Join df and clean 'namedata' column
+# df = pd.concat([df, namedata], axis = 1)
+# df.drop(columns = 'namedata', inplace = True)
+# 
+# # Reorder columns
+# df['location'] = df['dim']
+# df.drop(columns = 'dim', inplace = True)
+# 
+# =============================================================================
 
-# Reorder columns
-df['desc'] = df['dim']
-df.drop(columns = 'dim', inplace = True)
+#%% Split location name and article
+
+# Load checkpoint
+df = dfs['cp1']
+
+# Save original location name
+df['original_location_name'] = df['location']
+
+df['location'] = df['original_location_name'].apply(lambda x: x.split(',')[0])
+df['article'] = df['original_location_name'].apply(extract_article)
 
 #%% Create change columns
 
 # De facto changes
 # Total
-df['tcf1101'] = df['facto11'] - df['facto01'] 
-df['tcf0191'] = df['facto01'] - df['facto91']
-df['tcf1191'] = df['facto11'] - df['facto91'] 
+df['total_change_facto_2001_2011'] = df['facto11'] - df['facto01'] 
+df['total_change_facto_1991_2001'] = df['facto01'] - df['facto91']
+df['total_change_facto_1991_2011'] = df['facto11'] - df['facto91'] 
 
 # Percentage
-df['pcf1101'] = ((df['facto11'] - df['facto01']) * 100)/(df['facto01'])
-df['pcf0191'] = ((df['facto01'] - df['facto91']) * 100)/(df['facto91'])
-df['pcf1191'] = ((df['facto11'] - df['facto91']) * 100)/(df['facto91'])
+df['perc_change_facto_2001_2011'] = np.round(((df['facto11'] - df['facto01']) * 100)/(df['facto01']), 2)
+df['perc_change_facto_1991_2001'] = np.round(((df['facto01'] - df['facto91']) * 100)/(df['facto91']), 2)
+df['perc_change_facto_1991_2011'] = np.round(((df['facto11'] - df['facto91']) * 100)/(df['facto91']), 2)
 
-# De iure changes
+# Legal changes
 # Total
-df['tci1101'] = df['iure11'] - df['iure01'] 
-df['tci0191'] = df['iure01'] - df['iure91']
-df['tci1191'] = df['iure11'] - df['iure91']
+df['total_change_legal_2001_2011'] = df['legal11'] - df['legal01'] 
+df['total_change_legal_1991_2001'] = df['legal01'] - df['legal91']
+df['total_change_legal_1991_2011'] = df['legal11'] - df['legal91']
 
 # Percentage
-df['pci1101'] = ((df['iure11'] - df['iure01']) * 100)/(df['iure01'])
-df['pci0191'] = ((df['iure01'] - df['iure91']) * 100)/(df['iure91'])
-df['pci1191'] = ((df['iure11'] - df['iure91']) * 100)/(df['iure91'])
+df['perc_change_legal_2001_2011'] = np.round(((df['legal11'] - df['legal01']) * 100)/(df['legal01']), 2)
+df['perc_change_legal_1991_2001'] = np.round(((df['legal01'] - df['legal91']) * 100)/(df['legal91']), 2)
+df['perc_change_legal_1991_2011'] = np.round(((df['legal11'] - df['legal91']) * 100)/(df['legal91']), 2)
 
 # Replace infs and NaNs
 to_replace = 0
-for c in ['pcf1101', 'pcf0191', 'pcf1191', 'pci1101', 'pci0191', 'pci1191']:
-    df[c] = df[c].replace({np.inf : to_replace, 
+for col in ['perc_change_facto_2001_2011',
+            'perc_change_facto_1991_2001',
+            'perc_change_facto_1991_2011',
+            'perc_change_legal_2001_2011',
+            'perc_change_legal_1991_2001',
+            'perc_change_legal_1991_2011']:
+    df[col] = df[col].replace({np.inf : to_replace, 
                            np.nan : to_replace})
 
 #%% Save final ELSTAT census dataframe
