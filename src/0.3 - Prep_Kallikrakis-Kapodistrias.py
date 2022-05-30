@@ -8,10 +8,9 @@ Created on Tue Apr 12 12:38:38 2022
 #%% Import modules 
 
 import pandas as pd
-import numpy as np
 import urllib.request
 from os.path import exists
-from utils import filenames
+from auxiliary_code.utils import filenames
 
 #%% Obtain corresp .xlsx
 

@@ -17,10 +17,8 @@ As such, minimal changes will be performed.
 
 import pandas as pd
 import urllib.request
-import numpy as np
 from os.path import exists 
-from functions import unroll_census, dimotiki
-from utils import filenames
+from auxiliary_code.utils import filenames
 
 #%% Get urban census
 
@@ -42,7 +40,7 @@ dfu = dfu[8:]
 
 #%% Preprocess urban census
 
-colnames = ['code', 'desc', 'mon_plith', 'astikotita', 'orinotita', 'ekt']
+colnames = ['code', 'location', 'mon_plith', 'astikotita', 'orinotita', 'ekt']
 dfu.columns = colnames
 
 # Drop empty columns
