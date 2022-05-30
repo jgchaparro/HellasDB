@@ -5,12 +5,6 @@ Created on Fri Apr 15 10:43:24 2022
 @author: Jaime García Chaparr
 """
 
-import pandas as pd
-import numpy as np
-import re
-import requests as req
-from joblib import Parallel, delayed
-
 #%% Transliterate nomos names
 
 # Taken from sorted(dfgn['adminName2'].value_counts().index.tolist())
