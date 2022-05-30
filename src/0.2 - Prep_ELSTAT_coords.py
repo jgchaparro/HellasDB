@@ -10,7 +10,7 @@ Created on Tue Apr 12 12:38:38 2022
 import pandas as pd
 import urllib.request
 from os.path import exists 
-from utils import filenames
+from auxiliary_code.utils import filenames
 
 #%% Obtain census .csv
 
@@ -38,19 +38,19 @@ sel_cols = ['NAME_OIK', 'NAMEF_OIK', 'lat', 'lon', 'h',
 df = df[sel_cols]
 
 # Rename cols
-ren_cols = ['name', 'full_name', 'lat', 'lon', 'h', 'dimenot', 'dimos', 
+ren_cols = ['location', 'original_location_name', 'lat', 'lon', 'h', 'dimenot', 'dimos', 
             'nomos', 'diam']
 df.columns = ren_cols
 
 # Replace 'A
 
-rep_cols = ['name', 'full_name', 'dimenot']
+rep_cols = ['location', 'original_location_name', 'dimenot']
 for c in rep_cols:
     df[c] = df[c].str.replace('¶', 'Ά')
 
 #%% Clean columns
 
-df['full_name'] = df['full_name'].str.replace(', ', ',')
+df['original_location_name'] = df['original_location_name'].str.replace(', ', ',')
 df['dimenot'] = df['dimenot'].str.replace('Τ.Δ.', '')
 df['dimos'] = df['dimos'].str.replace('ΔΗΜΟΣ ', '')
 df['dimos'] = df['dimos'].str.replace('ΚΟΙΝΟΤΗΤΑ ', '')
