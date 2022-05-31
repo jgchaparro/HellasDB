@@ -8,8 +8,9 @@ Created on Tue Apr 12 12:38:38 2022
 #%% Import modules 
 
 import pandas as pd
-from utils import filenames, island_adm
-from functions import add_kapodistrias_adm, add_capital_data, add_island_status
+from auxiliary_code.utils import filenames, island_adm
+from auxiliary_code.data_adding import add_kapodistrias_adm, add_capital_data, \
+                                        add_island_status
 
 #%% Load dfs
 
@@ -28,7 +29,7 @@ dfs['cp1'] = df.copy()
 
 #%% Add Kallikratis administrative units
 
-add_kapodistrias_adm(df, dfs['coord'])
+df = add_kapodistrias_adm(df, dfs['coord'])
 
 #%% Save intermediate df
 
@@ -89,8 +90,6 @@ df.to_csv('../intermediate_databases/hellas_db_v1.3.csv')
 #%% Load intermediate
 
 df = pd.read_csv('../intermediate_databases/hellas_db_v1.3.csv', index_col = 'index')
-
-
 
 #%% Save final df
 

@@ -49,6 +49,7 @@ def add_kapodistrias_adm(df, dfc):
     
     # Join tables
     for i in df_mod.index:
+        print(f'Adding index {i}')
         match_coord = df_mod.loc[i, 'match_coord']
         res = dfc_mod2[dfc_mod2['match_coord'] == match_coord]
         return_df.loc[i, add_columns] = res[add_columns].values[0]
@@ -56,6 +57,8 @@ def add_kapodistrias_adm(df, dfc):
     print('Kapodistrias data added!')
     
     df = return_df.copy()
+    
+    return df
     
 #%% Add capital data
 
@@ -67,8 +70,8 @@ def add_capital_data(df, edres):
         code = lvl_df.loc[i, 'full_code'].strip()
         edra = lvl_df.loc[i, 'edra']
         # Filter by code
-        lvl_locations = mod_df[mod_df['code'].str.startswith(code)]
-        res = lvl_locations[lvl_locations['original_name'] == edra]
+        lvl_locations = mod_df[mod_df['full_code'].str.startswith(code)]
+        res = lvl_locations[lvl_locations['original_location_name'] == edra]
         
         # Add results to main df if there is only one coincidence
         if len(res) == 1:
@@ -76,11 +79,11 @@ def add_capital_data(df, edres):
             
         elif len(res) == 0:
             # Use brute force for specific cases
-            res = df[df['original_name'] == edra]
+            res = df[df['original_location_name'] == edra]
             if len(res) == 1:
                 df.loc[res.index, col] = True
             else:
-                res = df[df['original_name'].str.contains(edra)]
+                res = df[df['original_location_name'].str.contains(edra)]
                 if len(res) == 1:
                     df.loc[res.index, col] = True
                 else:
@@ -95,7 +98,7 @@ def add_capital_data(df, edres):
     mod_df = df.copy()
     
     # Chage `code` column to string
-    mod_df['code'] = mod_df['code'].astype(str)
+    mod_df['full_code'] = mod_df['full_code'].astype(str)
     
     colnames = { # Adm. lvl : column name
                 2 : 'edra_apok',
@@ -117,6 +120,8 @@ def add_capital_data(df, edres):
         list(map(apply_edra, lvl_df.index))
         
         print(f'Elapsed time: {time.time() - start}')
+        
+    
 
 #%% Island data
 
@@ -128,7 +133,7 @@ def add_island_status(df, island_adm):
     island_df = df[(df['perifereia'].isin(island_adm['perif'])) | 
                     (df['nomos'].isin(island_adm['nomos'])) |
                     (df['dimos'].isin(island_adm['dimos'])) |
-                    (df['original_name'].isin(island_adm['original_name']))]
+                    (df['original_location_name'].isin(island_adm['original_name']))]
 
     # Create `island` column
     df['island'] = False
