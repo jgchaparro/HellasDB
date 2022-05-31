@@ -9,11 +9,11 @@ Created on Tue Apr 12 12:38:38 2022
 
 import pandas as pd
 
-from functions import merge_census_coord, merge_census_urban, merge_agion_oros, \
-                        reverse_merging, get_unused_lats, merge_parenthesis, \
-                        merge_root_koinot_name, merge_simple, add_manual_locations, \
-                            merge_dimos_name
-from utils import filenames
+from auxiliary_code.merging import merge_census_coord, merge_census_urban_simple, \
+                        merge_agion_oros, reverse_merging, get_unused_lats, \
+                        merge_parenthesis, merge_root_koinot_name, merge_simple, \
+                        add_manual_locations, merge_dimos_name
+from auxiliary_code.utils import filenames
 
 import time
 
@@ -21,7 +21,6 @@ import time
 #%% Load data
 
 dfs = {'census' : pd.read_csv(f'../data/{filenames["ELSTAT_census"]}.csv'),
-       #'geonames' : pd.read_csv(f'../data/{filenames["Geonames"]}.csv'),
        'urban' : pd.read_csv(f'../data/{filenames["ELSTAT_urban"]}.csv').set_index('code'),
        'coord' : pd.read_csv(f'../data/{filenames["ELSTAT_coord"]}.csv'),
        'Kal-Kap' : pd.read_csv(f'../data/{filenames["Kal-Kap"]}.csv')}
@@ -30,15 +29,11 @@ dfs = {'census' : pd.read_csv(f'../data/{filenames["ELSTAT_census"]}.csv'),
 
 df = dfs['census'].copy()
 
-#%% Debug census
-
-#filter_town_debug(90, dfs['census'], dfs['coord'])    
-
 #%% Merge ELSTAT census and Geonames
 
 start = time.time()
 
-force = True
+force = False
 
 if force:
     merge_census_coord(df, dfs['coord'], dfs['Kal-Kap'])
@@ -61,7 +56,7 @@ df.to_csv('../intermediate_databases/hellas_db_v0.1.csv', index = False)
 
 df = pd.read_csv('../intermediate_databases/hellas_db_v0.1.csv')
 
-#%% Merge secondary NaNs
+#%% Merge Agion Oros
 
 merge_agion_oros(df, dfs['coord'])
 
@@ -118,12 +113,15 @@ df.to_csv('../intermediate_databases/hellas_db_v0.3.csv', index = False)
 
 df = pd.read_csv('../intermediate_databases/hellas_db_v0.3.csv')
 
-
 #%% Merge main df and ELSTAT urban
+
+# Load preprocessed terrain information
+dfu_alt = pd.read_excel('../data/astikotita_kai_orinotita.xlsx')
 
 start = time.time()
 
-merge_census_urban(df, dfs['urban'])
+#merge_census_urban(df, dfs['urban'])
+df = merge_census_urban_simple(df, dfu_alt)
 
 # Present merging results
 n_astikotita = len(df[~df['astikotita'].isnull()])
