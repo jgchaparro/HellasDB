@@ -3,3 +3,4 @@
 /data/Geonames*
 /data/census+geonames.csv
 /raw_geonames_df.csv
+/img/*

@@ -2,20 +2,23 @@
 
 ![lefkada_banner](https://www.altitude.gr/wp-content/uploads/2020/09/banner-lefkada-oi-dekatreis-pio-ekpliktikes-paralies-tis-travel-altitudegr-1024x576.jpg)
 
-The Hellas Database aims to gather population data from ELSTAT census and other sources in a clean format, ready to perform data analysis and visualizations.
+The Hellas Database aims to gather population and other data from ELSTAT in a clean format, ready to perform data analysis and visualizations.
+
+[Click here to see an interactive map of Greece based on this database](https://public.tableau.com/app/profile/jgchaparro/viz/Hellas_db_dashboard/Generaldashboard).
 
 ## Features
 
-- Legal and real population for 13 000+ locations in Greece based on ELSTAT data.
-- Location names in dimotiki Greek.
-- All administrative units a location belongs to.   
-- Coordinates for ~ 70 % of locations.
-- Other terrain information: urban/rural, plains/mountains.
+- Legal and real population for 13 500 + locations in Greece based on ELSTAT data.
+- Region, decentralized administration, nomos (province), dimos (municipality) and minicipal unit of each location.   
+- Coordinates for ~ 97,5 % of locations.
+- Terrain information: urban/rural, plains/mountains.
+- Administrative information during the application of the Kapodistrias plan (1998 - 2010).
+- Other information: capital seats, islands, etc.
+
 
 ## Sources
 
 - [ELSTAT](https://www.statistics.gr/2011-census-pop-hous)
-- [GeoNames API](http://www.geonames.org/export/web-services.html)
 
 ## Main files
 
@@ -24,18 +27,18 @@ The Hellas Database aims to gather population data from ELSTAT census and other 
 
 ## Steps taken
 
-1. Downloading ELSTAT census for 1991, 2001 and 2011 years.
-1. Cleaning census data. Conversion of katharevousa nomenclature to dimotiki.
-1. Getting area data for all 13 perifereies and all available population registers for each perifereia through Geonames API.
-1. Joining Geonames API data in a unique database.
-1. Joining census and Geonames data based on town name (`desc`) and province (`nomos`) to obtain coordinates for each location.
-1. Adding terrain information (`astikotita`, `orinotita`) based on ELSTAT urban/rural census. 
+1. Downloading ELSTAT census for 1991, 2001 and 2011 years, as well as other documents for coordinates and terrain data.
+1. Adding coordinates (`lat`, `long`) and altitude (`h`) for most location through several complex functions.
+1. Incorporating terrain information (`astikotita`, `orinotita`).
+1. Postprocessing to obtain information abour capital seats and other relevant data for analysis.
+1. Generating an [interactive dashboard in Tableau](https://public.tableau.com/app/profile/jgchaparro/viz/Hellas_db_dashboard/Generaldashboard).
 
-## Caveats
+## Next steps
 
-- Conversion from katharevousa to dimotiki nomenclature might not be completely accurate. Some specific conversion rules for relevant population clusters were added to make up for this, but coordinates for smaller populations might be lost due to incorrect conversion. 
-- To avoid discrepancies during census and Geonames databases merging, some locations were given an approximate `nomos` based on the available information.
-- Due to the frequent duplicated name towns in the same province, it is impossible to assign coordinates to some locations on a systematic basis.
+- Convert location names in Katharevousa Greek to Dimotiki Greek.
+- Find coordinates for the last remaing 300 units without data.  
+- Separate the capital columns (`edres_`) to form a new table.
+- Generate a version using Latin characters instead of Greek letters to improve accesibility for non-Greek-speaking users.
 
 ## Technology Stack
 
